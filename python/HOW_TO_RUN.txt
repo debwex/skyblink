@@ -1,0 +1,29 @@
+SKY BLINK - how to run the full version
+=======================================
+
+1. Extract this zip INTO your skyblink folder on the Desktop
+   (C:\Users\mun83\Desktop\skyblink). Say "Replace" if asked.
+   You should now have:
+       skyblink\spherex_test.py      (updated)
+       skyblink\web\index.html
+       skyblink\web\style.css
+       skyblink\web\app.js
+       skyblink\cache\               (your downloaded NASA images - keep it!)
+
+2. Open Command Prompt and run:
+       cd %USERPROFILE%\Desktop\skyblink
+       python spherex_test.py --web
+
+   This uses your cache, so it should take only a few minutes.
+   It makes the folder web\data\ (clean frames, comet thumbnails, site_data.js).
+
+3. Double-click  web\index.html  to open SKY BLINK in your browser.
+   Turn your volume up / use headphones for Listen mode.
+
+Sections: Blink viewer, Spot it game, Listen mode, Fingerprint (with sound), Learn cards, About.
+
+To put it online later: upload the whole "web" folder to a GitHub repository
+and turn on GitHub Pages.
+
+Remember: say on your project page what was prepared before the hackathon,
+and keep the "Use of AI" note in the About section.

@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SKY BLINK — Hunt a comet from another star, by sight or by sound</title>
+  <meta name="description" content="Explore real NASA SPHEREx images of interstellar comet 3I/ATLAS. Blink through the sky, hear the comet move, and discover what it is made of.">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="intro" class="intro" aria-hidden="true" hidden>
+    <div class="intro-stars"></div>
+    <span class="intro-comet"></span>
+    <div class="intro-text">
+      <span class="brand-mark big" aria-hidden="true"></span>
+      <h2>SKY BLINK</h2>
+      <p>Explore the sky — by sight or by sound</p>
+      <button class="btn" id="introSkip">Enter ›</button>
+    </div>
+  </div>
+  <a class="skip" href="#main">Skip to content</a>
+
+  <header class="topbar">
+    <a class="brand" href="#home" aria-label="SKY BLINK home">
+      <span class="brand-mark" aria-hidden="true"></span>
+      <span>SKY BLINK</span>
+    </a>
+    <nav aria-label="Sections">
+      <a href="#search">Search</a>
+      <a href="#explorer">Explorer</a>
+      <a href="#listen">Listen</a>
+      <a href="#spot">Spot it</a>
+      <a href="#blink">Comet</a>
+      <a href="#learn">Learn</a>
+      <a href="#classroom">Classroom</a>
+      <a href="#how">How it works</a>
+      <a href="#about">About</a>
+    </nav>
+    <div class="soundbox" role="group" aria-label="Sound settings">
+      <button class="btn small" id="muteBtn" aria-pressed="false" title="Mute or unmute all sound">🔊 Sound on</button>
+      <input type="range" id="volume" min="0" max="1" step="0.05" value="0.8" aria-label="Volume">
+      <button class="btn small" id="testSound" title="Play a test sound">Test</button>
+    </div>
+  </header>
+
+  <main id="main">
+    <!-- HOME -->
+    <section id="home" class="hero">
+      <span class="shoot" aria-hidden="true"></span>
+      <div class="hero-text">
+        <p class="eyebrow">Real data from NASA's SPHEREx space telescope</p>
+        <h1>See how the sky changes — <em>by sight or by sound.</em></h1>
+        <p class="lead">Type any spot in the sky and SKY BLINK plays NASA SPHEREx's images of it like a little video, so moving and changing objects jump out: comets, asteroids, nearby stars, brown dwarfs, maybe even a hidden Planet X. Every view can also be <strong>heard</strong>, so blind and low-vision explorers can join the hunt.</p>
+        <div class="hero-actions">
+          <a class="btn primary" href="#search">🔭 Search any spot in the sky</a>
+          <a class="btn" href="#explorer">🪐 Planet X Hunter</a>
+          <a class="btn" href="#listen">🎧 Listen</a>
+        </div>
+        <ul class="stats" id="heroStats" aria-label="Project facts"></ul>
+      </div>
+      <figure class="hero-visual" aria-label="Two real SPHEREx images blinking: the comet moves, the stars stay still">
+        <img id="heroA" alt="">
+        <img id="heroB" class="blinker" alt="">
+        <span id="heroMarkA" class="marker" aria-hidden="true"></span>
+        <span id="heroMarkB" class="marker blinker" aria-hidden="true"></span>
+        <figcaption id="heroCap"></figcaption>
+      </figure>
+        <div class="tryfirst">
+          <p class="eyebrow">New here? Try these 3 things · 2 minutes</p>
+          <ol>
+            <li><a href="#search">🔭 <b>Search:</b> click <i>Epsilon Indi B</i>, then <i>Make spectrum</i>: methane in a brown dwarf, from live SPHEREx data.</a></li>
+            <li><a href="#explorer">🪐 <b>Planet X Hunter:</b> press <i>Blink</i> and watch Pluto move while the stars stay still.</a></li>
+            <li><a href="#listen">🎧 <b>Listen:</b> learn the sounds, close your eyes, and follow the comet by ear.</a></li>
+          </ol>
+        </div>
+    </section>
+
+    <div id="noData" class="notice" hidden>
+      <h2>No SPHEREx data found yet</h2>
+      <p>Run <code>python spherex_test.py --web</code> in the <code>skyblink</code> folder, then reload this page.</p>
+    </div>
+
+    <!-- LIVE SEARCH (any RA/Dec) -->
+    <section id="search" class="panel">
+      <div class="panel-head">
+        <p class="eyebrow">Step 1 · Search · live NASA SPHEREx data</p>
+        <h2>Type any sky position and watch it change</h2>
+        <p>Enter coordinates (Right Ascension and Declination) or a name. SKY BLINK fetches every SPHEREx image of that patch from NASA/IPAC IRSA, lines them up, and plays them like a little video, with sound. Because it always asks the archive for the newest data release, new SPHEREx data shows up here automatically.</p>
+      </div>
+      <form id="sForm" class="sform" autocomplete="off">
+        <div class="srow">
+          <label class="fld grow"><span>Name (optional)</span><input id="sName" placeholder="e.g. Barnard's Star, WISE 0855, M42"></label>
+          <label class="fld"><span>RA (degrees or 08h55m10.8s)</span><input id="sRa" placeholder="133.7951"></label>
+          <label class="fld"><span>Dec (degrees or -7d14m42.5s)</span><input id="sDec" placeholder="-7.2451"></label>
+        </div>
+        <div class="srow">
+          <label class="fld"><span>Field of view: <b id="sFovOut">6</b> arcmin</span><input type="range" id="sFov" min="0.03" max="0.5" step="0.01" value="0.1"></label>
+          <label class="fld"><span>Infrared colours (detector)</span>
+            <select id="sDet">
+              <option value="auto">Auto (target's best)</option>
+              <option value="1">1 · 0.75–1.09 µm</option><option value="2">2 · 1.10–1.62 µm</option>
+              <option value="3">3 · 1.63–2.41 µm</option><option value="4">4 · 2.42–3.82 µm</option>
+              <option value="5">5 · 3.83–4.41 µm</option><option value="6">6 · 4.42–5.00 µm</option>
+            </select></label>
+          <label class="fld"><span>Frames</span>
+            <select id="sMode"><option value="stack">Add images per visit (cleaner)</option><option value="all">Every single image</option></select></label>
+          <div class="fld checks">
+            <label><input type="checkbox" id="sGaia" checked> Gaia DR3 stars</label>
+            <label><input type="checkbox" id="sWise"> WISE sources</label>
+          </div>
+          <button class="btn primary big" id="sGo" type="submit">🔭 Search</button>
+        </div>
+        <div class="presets" aria-label="Challenge test targets">
+          <span class="muted small">Challenge test targets:</span>
+          <button type="button" class="pchip" data-name="Barnard's Star">Barnard's Star</button>
+          <button type="button" class="pchip" data-name="Epsilon Indi B">Epsilon Indi B</button>
+          <button type="button" class="pchip" data-name="WISE 0855">WISE 0855</button>
+          <button type="button" class="pchip" data-name="RW Aurigae">RW Aurigae</button>
+          <button type="button" class="pchip" data-name="R Draconis">R Draconis</button>
+        </div>
+      </form>
+      <div id="sOffline" class="notice" hidden>
+        <p id="sSavedNote" hidden><b>Saved real searches:</b> click a challenge target above to see a search we ran with live SPHEREx data (blink, sound, spectrum, overlays all work).</p>
+        <p><b>To search any other position live, run the SKY BLINK helper.</b> On the computer: open Command Prompt in the <code>skyblink</code> folder, run <code>python skyblink_server.py</code>, then open <a href="http://localhost:8000/#search">http://localhost:8000</a>. The rest of this website works without it.</p>
+      </div>
+      <div id="sProgress" class="sprog" hidden>
+        <div class="bar"><span id="sBar"></span></div>
+        <p id="sStatus" class="muted" aria-live="polite"></p>
+      </div>
+      <div id="sResult" hidden>
+        <div class="viewer">
+          <figure class="stage-wrap">
+            <div class="stage" id="sStage">
+              <img id="sImg" alt="SPHEREx image of the searched sky position">
+              <img id="sDiff" class="diffimg" alt="Change map" hidden>
+              <img id="sDeep" class="diffimg" alt="All images added together" hidden>
+              <canvas id="sOverlay" class="overlay" aria-hidden="true"></canvas>
+              <span id="sMarker" class="marker" aria-hidden="true"></span>
+              <span class="scan" aria-hidden="true"></span>
+              <span class="stage-tag" id="sTag"></span>
+            </div>
+            <figcaption class="caption" id="sCaption"></figcaption>
+          </figure>
+          <div class="side">
+            <h3 id="sTitle" class="ex-name"></h3>
+            <p id="sSub" class="muted"></p>
+            <dl class="readout">
+              <div><dt>Date (UTC)</dt><dd id="sDate">–</dd></div>
+              <div><dt>Infrared colour</dt><dd id="sWl">–</dd></div>
+              <div><dt>Images added</dt><dd id="sN">–</dd></div>
+              <div><dt>Target signal</dt><dd id="sSnr">–</dd></div>
+              <div><dt>Quality flags</dt><dd id="sFlag">–</dd></div>
+            </dl>
+            <div class="controls">
+              <button class="btn icon" id="sPrev" aria-label="Previous frame">◀</button>
+              <button class="btn primary" id="sPlay" aria-pressed="false">▶ Blink</button>
+              <button class="btn icon" id="sNext" aria-label="Next frame">▶</button>
+              <button class="btn" id="sListen">🎧 Listen</button>
+            </div>
+            <label class="fld"><span>Speed</span><input type="range" id="sSpeed" min="150" max="1500" step="50" value="600"></label>
+            <div class="toggles">
+              <label><input type="checkbox" id="sShowMarker" checked> Target</label>
+              <label><input type="checkbox" id="sShowGaia" checked> Gaia</label>
+              <label><input type="checkbox" id="sShowWise" checked> WISE</label>
+              <label><input type="checkbox" id="sShowChanges" checked> Changes</label>
+              <label><input type="checkbox" id="sShowDiff"> Subtract (last − first)</label>
+              <label><input type="checkbox" id="sShowDeep"> Add all</label>
+            </div>
+            <div class="controls">
+              <button class="btn" id="sSpecBtn">🌈 Make spectrum</button>
+              <button class="btn" id="sCopy">🔗 Copy link</button>
+              <a class="btn" id="sAladin" target="_blank" rel="noopener">Aladin ↗</a>
+              <button class="btn" id="sSave" hidden>💾 Save for website</button>
+            </div>
+            <p id="sLive" class="live small-live" aria-live="polite"></p>
+          </div>
+        </div>
+        <div class="lc" id="sChangesWrap">
+          <h3>What changed?</h3>
+          <ul id="sChanges" class="changes"></ul>
+          <p class="hint">Change finder compares the first and last frames. A red/blue pair close together usually means something <b>moved</b>; a single spot means something got brighter or dimmer. Spots with no Gaia star nearby are the most interesting. Careful: each frame is a slightly different infrared colour, so some stars change brightness just because of that. Check a candidate in Blink before you believe it!</p>
+        </div>
+        <div class="lc" id="sSpecWrap" hidden>
+          <h3>Spectrum on the fly <span class="muted small" id="sSpecDate"></span></h3>
+          <canvas id="sSpec" role="img" aria-label="Brightness of the target at each infrared colour"></canvas>
+          <div class="controls"><button class="btn" id="sSpecPlay">🎧 Play the spectrum</button>
+            <label class="checkline"><input type="checkbox" id="sSpecLine"> Join the dots (show the shape)</label></div>
+          <p class="hint">Each dot is one SPHEREx image, measured at the exact colour where the target landed. Pink dashed lines mark colours where water (1.4 µm) and methane (3.3 µm) absorb light; grey lines mark carbon dioxide (4.26 µm) and carbon monoxide (4.67 µm). A cold brown dwarf like Epsilon Indi B looks dark at those colours and bright in between: that is how SPHEREx reveals methane.</p>
+        </div>
+        <details class="lc" id="sMeta">
+          <summary>Metadata for each frame (files, flags)</summary>
+          <div class="tablewrap"><table class="meta"><thead><tr><th>#</th><th>Date (UTC)</th><th>µm</th><th>Images</th><th>Signal</th><th>Flagged px near target</th><th>Flagged in view</th><th>SPHEREx files</th></tr></thead><tbody id="sMetaBody"></tbody></table></div>
+        </details>
+      </div>
+    </section>
+
+    <!-- SKY EXPLORER (challenge targets) -->
+    <section id="explorer" class="panel">
+      <div class="panel-head">
+        <p class="eyebrow">Step 2 · Explore · Planet X Hunter and the challenge targets</p>
+        <h2>Pick a target and blink between SPHEREx visits</h2>
+        <p>SPHEREx maps the whole sky every six months. Compare its images to catch Solar System worlds and nearby stars and brown dwarfs moving across the sky, and stars that brighten and dim. Start with <b>Planet X Hunter</b>: this is how a hidden planet would give itself away.</p>
+      </div>
+      <div class="pxexplain" id="pxExplain">
+        <h3>🪐 What is Planet X Hunter?</h3>
+        <ol>
+          <li><b>The mystery.</b> Some astronomers think an undiscovered planet, nicknamed <em>Planet X</em> (or "Planet Nine"), may orbit far beyond Neptune. Nobody has found it yet.</li>
+          <li><b>How it would be found.</b> Stars are so far away that they stay still. Anything in our Solar System <b>moves</b> between images. In 1930, Clyde Tombaugh was searching for "Planet X" this way when he found <b>Pluto</b>. Pluto was later reclassified as a <em>dwarf planet</em> (2006), and the search for a bigger hidden planet goes on.</li>
+          <li><b>Our test.</b> Pluto is the perfect practice target: a real, far, slow-moving world, just like Planet X would be. We use real NASA SPHEREx images of it from October 2025, with positions from NASA JPL Horizons. Press <b>▶ Blink</b>: the stars stay still and Pluto walks across the picture. Press <b>🎧 Listen</b> to hear it move.</li>
+          <li><b>How far could SPHEREx see it?</b> Use the distance slider below the picture: even at 500 times Earth's distance from the Sun, Planet X would still drift ~8 SPHEREx pixels in a week.</li>
+        </ol>
+      </div>
+      <div class="target-list" id="targetList" role="tablist" aria-label="Targets"></div>
+      <div id="exEmpty" class="notice" hidden>
+        <p>No target data yet. Run <code>python spherex_targets.py</code> in the <code>skyblink</code> folder, then reload this page.</p>
+      </div>
+      <div class="viewer" id="exViewer" hidden>
+        <figure class="stage-wrap">
+          <div class="stage" id="exStage">
+            <img id="exImg" alt="SPHEREx image of the selected target">
+            <img id="exDiff" class="diffimg" alt="Change map: red is new light, blue is light that left" hidden>
+            <svg id="exTrail" class="trail" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"></svg>
+            <span id="exMarker" class="marker" aria-hidden="true"></span>
+            <span class="scan" aria-hidden="true"></span>
+            <span class="stage-tag" id="exTag"></span>
+          </div>
+          <figcaption class="caption" id="exCaption"></figcaption>
+        </figure>
+        <div class="side">
+          <h3 id="exName" class="ex-name"></h3>
+          <p id="exType" class="muted"></p>
+          <p id="exDesc"></p>
+          <dl class="readout">
+            <div><dt>Visit date (UTC)</dt><dd id="exDate">–</dd></div>
+            <div><dt>Infrared colour</dt><dd id="exWl">–</dd></div>
+            <div><dt>Signal</dt><dd id="exSnr">–</dd></div>
+            <div id="exMoveRow"><dt>Movement</dt><dd id="exMove">–</dd></div>
+          </dl>
+          <div class="controls">
+            <button class="btn icon" id="exPrev" aria-label="Previous visit">◀</button>
+            <button class="btn primary" id="exPlay" aria-pressed="false">▶ Blink</button>
+            <button class="btn icon" id="exNext" aria-label="Next visit">▶</button>
+            <button class="btn" id="exListen">🎧 Listen</button>
+          </div>
+          <div class="toggles">
+            <label><input type="checkbox" id="exShowMarker" checked> Circle the target</label>
+            <label><input type="checkbox" id="exShowDiff"> Change map</label>
+          </div>
+          <p id="exLive" class="live small-live" aria-live="polite"></p>
+        </div>
+      </div>
+      <div class="lc" id="exLcWrap" hidden>
+        <h3>Brightness over time</h3>
+        <canvas id="exLc" role="img" aria-label="Brightness of the target in each SPHEREx image over time"></canvas>
+        <p class="hint">Each dot is one SPHEREx image; colour shows its infrared wavelength. Compare dots of similar colour to see real brightness changes.</p>
+      </div>
+      <div class="pxcalc" id="pxCalc" hidden>
+        <h3>Planet X Hunter: how far away could SPHEREx catch it moving?</h3>
+        <p>Planets far from the Sun seem to drift because <em>Earth</em> moves around the Sun, like nearby trees sliding past a train window faster than far-away hills. The farther the world, the slower it drifts.</p>
+        <canvas id="pxOrbit" class="pxorbit" role="img" aria-label="Animation: Earth circles the Sun, and the distant planet seems to slide back and forth against the far-away stars. Farther planets slide less."></canvas>
+        <label class="pxrow" for="pxDist">Distance from the Sun: <b id="pxDistOut">500</b> times Earth's distance (AU)</label>
+        <input type="range" id="pxDist" min="30" max="1000" step="10" value="500">
+        <p id="pxOut" class="pxout" aria-live="polite"></p>
+        <button class="btn" id="pxHear">🎧 Hear its drift</button>
+        <p class="hint">Estimate for a world seen roughly at right angles to Earth's motion; real motion varies through the year. Planet Nine, a proposed Planet X, is predicted at about 400–800 AU.</p>
+      </div>
+    </section>
+
+    <!-- LISTEN -->
+    <section id="listen" class="panel">
+      <div class="panel-head">
+        <p class="eyebrow">Step 3 · Listen</p>
+        <h2>Listen mode: explore with your ears</h2>
+        <p>Made so that blind and visually impaired people can explore SPHEREx data too. Put on headphones — sound moves between your left and right ears.</p>
+      </div>
+
+      <div class="listen-grid">
+        <div class="listen card-like">
+          <h3>🎧 Listening tour</h3>
+          <p class="muted"><b>First, learn the sounds</b> (press each one):</p>
+          <div class="soundkey" role="group" aria-label="Sound key">
+            <button class="pchip" data-key="stars">✨ Stars (soft hum)</button>
+            <button class="pchip" data-key="comet">☄️ Comet (chime)</button>
+            <button class="pchip" data-key="left">◀ Left</button>
+            <button class="pchip" data-key="right">Right ▶</button>
+            <button class="pchip" data-key="high">⬆ High in picture</button>
+            <button class="pchip" data-key="low">⬇ Low in picture</button>
+            <button class="pchip" data-key="bright">🔆 Bright vs faint</button>
+          </div>
+          <p class="muted">Then close your eyes and start the tour: follow the chime as the comet travels across 10 real SPHEREx images.</p>
+          <div class="stage tourstage" id="tourStage">
+            <img id="tourImg" alt="Current SPHEREx image in the listening tour">
+            <span id="tourMarker" class="marker" aria-hidden="true" hidden></span>
+            <div id="tourCover" class="sonar-cover" hidden></div>
+          </div>
+          <button class="btn primary big" id="listenBtn" aria-pressed="false">▶ Start listening tour</button>
+          <div class="toggles">
+            <label><input type="checkbox" id="speakOn" checked> Spoken descriptions</label>
+            <label><input type="checkbox" id="tourHide"> Hide the picture</label>
+          </div>
+          <p id="listenLive" class="live" aria-live="polite"></p>
+        </div>
+
+        <div class="listen card-like">
+          <p class="badge-test">🎯 Test yourself</p>
+          <h3>📡 Sonar challenge: find the comet by ear</h3>
+          <p class="muted">Move your finger or mouse over the image — or use the arrow keys. Beeps get <strong>faster and higher</strong> as you get closer. Press <kbd>Enter</kbd> when you think you found it.</p>
+          <div class="stage sonar" id="sonarStage" tabindex="0" role="application" aria-label="Sonar image. Use arrow keys to move, Enter to check.">
+            <img id="sonarImg" alt="SPHEREx image for sonar search">
+            <div id="sonarCover" class="sonar-cover"></div>
+            <span id="sonarCursor" class="sonar-cursor" hidden></span>
+            <span id="sonarAnswer" class="marker answer" hidden></span>
+          </div>
+          <div class="controls">
+            <button class="btn" id="sonarStart">▶ Start sonar</button>
+            <label><input type="checkbox" id="sonarHide" checked> Hide the picture (play by ear only)</label>
+          </div>
+          <p id="sonarLive" class="live small-live" aria-live="polite"></p>
+        </div>
+      </div>
+
+      <details class="rules" open>
+        <summary>How data becomes sound (our sound rules)</summary>
+        <table>
+          <thead><tr><th>Data</th><th>Sound</th><th>Why</th></tr></thead>
+          <tbody>
+            <tr><td>Comet left ↔ right</td><td>Left ↔ right ear (stereo)</td><td>Position you can hear</td></tr>
+            <tr><td>Comet higher in image</td><td>Higher note</td><td>Up = high is natural for most listeners</td></tr>
+            <tr><td>Comet signal strength</td><td>Louder</td><td>Brighter = louder</td></tr>
+            <tr><td>Stars</td><td>Steady soft hum</td><td>They do not move between images</td></tr>
+            <tr><td>Infrared colour (fingerprint)</td><td>Short wavelength = high note, long = low note</td><td>Like light: short waves = higher energy</td></tr>
+            <tr><td>Detector band</td><td>Smooth tone below 2.42 µm, buzzier tone above</td><td>SPHEREx uses two different detector types</td></tr>
+          </tbody>
+        </table>
+      </details>
+    </section>
+
+    <!-- SPOT IT -->
+    <section id="spot" class="panel">
+      <div class="panel-head">
+        <p class="eyebrow">Step 4 · Play</p>
+        <h2>Spot it: can you find the moving object?</h2>
+        <p>Two real images blink back and forth. Tap the fuzzy dot that moves. Astronomers discovered Pluto with this trick in 1930.</p>
+      </div>
+      <div class="game">
+        <div class="stage" id="gameStage" tabindex="0" aria-label="Game image. Click or tap where you think the comet is. Press H for a hint.">
+          <img id="gameImg" alt="Two SPHEREx images blinking">
+          <span id="gameGuess" class="guess" hidden></span>
+          <span id="gameAnswer" class="marker answer" hidden></span>
+        </div>
+        <div class="side">
+          <p class="score">Round <span id="gRound">1</span> of 5 · Score <span id="gScore">0</span></p>
+          <div class="progress" aria-hidden="true"><span id="gBar"></span></div>
+          <p id="gMsg" class="gmsg" role="status">Watch the blinking images, then tap the object that moves.</p>
+          <div class="controls">
+            <button class="btn" id="gHint">💡 Hint</button>
+            <button class="btn primary" id="gNext">Skip round</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- BLINK VIEWER -->
+    <section id="blink" class="panel">
+      <div class="panel-head">
+        <p class="eyebrow">Case study · Part 1 · watch a visitor from another star move</p>
+        <h2>Blink the sky: interstellar comet 3I/ATLAS</h2>
+        <p>Stars are so far away they stay still. Flip between images taken hours apart and watch what moves.</p>
+      </div>
+
+      <div class="viewer">
+        <figure class="stage-wrap">
+          <div class="stage" id="stage">
+            <img id="frameImg" alt="SPHEREx infrared image of the sky around comet 3I/ATLAS">
+            <svg id="trail" class="trail" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"></svg>
+            <div id="astLayer" class="ast-layer" aria-hidden="true"></div>
+            <span id="marker" class="marker" aria-hidden="true"></span>
+            <span class="stage-tag" id="stageTag"></span>
+          </div>
+          <figcaption class="caption" id="frameCaption"></figcaption>
+        </figure>
+
+        <div class="side">
+          <dl class="readout">
+            <div><dt>Date (UTC)</dt><dd id="rDate">–</dd></div>
+            <div><dt>Time since first image</dt><dd id="rElapsed">–</dd></div>
+            <div><dt>Infrared colour</dt><dd><span id="rWl">–</span> <span class="chip" id="rChip"></span></dd></div>
+            <div><dt>Comet signal</dt><dd id="rSnr">–</dd></div>
+          </dl>
+
+          <div class="wlbar" aria-hidden="true">
+            <div class="wlbar-track"></div>
+            <span class="wlbar-pin" id="wlPin"></span>
+            <div class="wlbar-labels"><span>0.75 µm</span><span>infrared colour</span><span>5.0 µm</span></div>
+          </div>
+
+          <div class="controls">
+            <button class="btn icon" id="prevBtn" aria-label="Previous image">◀</button>
+            <button class="btn primary" id="playBtn" aria-pressed="false">▶ Play</button>
+            <button class="btn icon" id="nextBtn" aria-label="Next image">▶</button>
+          </div>
+          <label class="slider-label" for="frameSlider">Image <span id="frameNum">1</span> of <span id="frameTotal">1</span></label>
+          <input type="range" id="frameSlider" min="0" max="0" value="0">
+
+          <div class="toggles">
+            <label><input type="checkbox" id="showMarker" checked> Circle the comet</label>
+            <label><input type="checkbox" id="showTrail"> Show its path</label>
+            <label id="astToggleLabel"><input type="checkbox" id="showAst"> Known asteroids</label>
+            <label><input type="checkbox" id="soundOn"> Play sound</label>
+            <label>Speed
+              <select id="speed">
+                <option value="1200">Slow</option>
+                <option value="700" selected>Normal</option>
+                <option value="350">Fast</option>
+              </select>
+            </label>
+          </div>
+          <div id="astList" class="ast-list" hidden></div>
+          <p class="hint">Keyboard: ← → to step, Space to play.</p>
+        </div>
+      </div>
+      <p class="note">Each SPHEREx image sees a slightly different infrared colour, so stars change brightness between frames. The comet looks brightest at colours where its gases glow.</p>
+    </section>
+
+
+
+    <!-- FINGERPRINT -->
+    <section id="fingerprint" class="panel">
+      <div class="panel-head">
+        <p class="eyebrow">Case study · Part 2 · what the comet is made of</p>
+        <h2>The comet's fingerprint</h2>
+        <p>Each dot is one SPHEREx image of 3I/ATLAS, measured at the exact infrared colour where the comet landed. Peaks show the colours where the comet's gases glow — carbon dioxide shines brightest.</p>
+      </div>
+      <div class="fp">
+        <div class="fp-chart">
+          <div class="fp-filter" role="group" aria-label="Show observations from">
+            <button class="btn small" data-month="all" aria-pressed="true">Both visits</button>
+            <button class="btn small" data-month="Aug 2025" aria-pressed="false">August 2025</button>
+            <button class="btn small" data-month="Dec 2025" aria-pressed="false">December 2025</button>
+          </div>
+          <canvas id="fpCanvas" role="img" aria-label="Chart of comet signal strength against infrared wavelength, with peaks at water, carbon dioxide and carbon monoxide"></canvas>
+          <div class="legend" id="fpLegend"></div>
+        </div>
+        <div class="side">
+          <label class="slider-label" for="wlSlider">Infrared colour: <b id="wlVal">4.26</b> µm</label>
+          <input type="range" id="wlSlider" min="0.75" max="5" step="0.01" value="4.26">
+          <div class="fp-thumb">
+            <img id="fpThumb" alt="Close-up of the comet at the selected infrared colour">
+            <div>
+              <p id="fpInfo" class="fp-info" aria-live="polite"></p>
+              <p class="fp-feature" id="fpFeature"></p>
+            </div>
+          </div>
+          <div class="jumps" aria-label="Jump to a gas">
+            <button class="btn small" data-wl="2.7">💧 Water</button>
+            <button class="btn small" data-wl="4.26">🫧 Carbon dioxide</button>
+            <button class="btn small" data-wl="4.67">Carbon monoxide</button>
+          </div>
+          <div class="controls">
+            <button class="btn primary" id="fpPlay">♫ Play the fingerprint</button>
+            <button class="btn" id="fpCompare">♫ August vs December</button>
+          </div>
+          <label class="inline"><input type="checkbox" id="fpSound" checked> Sound on slider</label>
+          <p class="hint">High notes = short wavelengths, low notes = long wavelengths. Louder = stronger comet signal.</p>
+        </div>
+      </div>
+      <p class="note">Why is December brighter? 3I/ATLAS passed closest to the Sun at the end of October 2025, heated up, and released much more gas and dust.</p>
+    </section>
+
+
+    <!-- LEARN -->
+    <section id="learn" class="panel">
+      <div class="panel-head row-head">
+        <div>
+          <p class="eyebrow" data-i18n="learnEyebrow">Learn</p>
+          <h2 data-i18n="learnTitle">Space facts in one minute</h2>
+        </div>
+        <div class="lang" role="group" aria-label="Language">
+          <button class="btn small" data-lang="en" aria-pressed="true">English</button>
+          <button class="btn small" data-lang="ms" aria-pressed="false">Bahasa Melayu</button>
+        </div>
+      </div>
+      <div class="cards" id="cards"></div>
+    </section>
+
+    <!-- CLASSROOM -->
+    <section id="classroom" class="panel">
+      <div class="panel-head row-head">
+        <div>
+          <p class="eyebrow" data-i18n="classEyebrow">Classroom mode</p>
+          <h2 data-i18n="classTitle">Test yourself</h2>
+          <p data-i18n="classIntro">Five quick questions. Teachers: a 40-minute lesson plan is below.</p>
+        </div>
+        <div class="lang" role="group" aria-label="Language">
+          <button class="btn small" data-lang="en" aria-pressed="true">English</button>
+          <button class="btn small" data-lang="ms" aria-pressed="false">Bahasa Melayu</button>
+        </div>
+      </div>
+      <div class="quiz" id="quiz"></div>
+      <details class="teacher" id="teacher">
+        <summary data-i18n="teacherSummary">👩‍🏫 Teacher guide: 40-minute lesson</summary>
+        <div id="teacherBody"></div>
+      </details>
+    </section>
+
+    <!-- HOW IT WORKS -->
+    <section id="how" class="panel">
+      <div class="panel-head">
+        <p class="eyebrow">Behind the scenes</p>
+        <h2>How SKY BLINK works</h2>
+        <p>Our own Python pipeline turns raw NASA archive files into pictures and sounds anyone can explore.</p>
+      </div>
+      <div class="flow" id="flow"></div>
+      <div class="limits">
+        <h3>Honest limits</h3>
+        <ul>
+          <li>"Comet signal" is signal-to-noise inside a small circle — great for comparing colours, but not a calibrated brightness.</li>
+          <li>Each image only sees one infrared colour at the comet's spot, so the fingerprint is built from many images taken at different times.</li>
+          <li>Known-asteroid positions come from NASA JPL predictions for an observer on Earth; SPHEREx orbits Earth, so labels can be off by a pixel or two.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ABOUT -->
+    <section id="about" class="panel about">
+      <div class="panel-head">
+        <p class="eyebrow">About</p>
+        <h2>About SKY BLINK</h2>
+      </div>
+      <div class="about-grid">
+        <div>
+          <h3>What we built</h3>
+          <p>SKY BLINK turns real NASA SPHEREx data into a tool anyone can use — by sight or by sound. Our Python pipeline downloads every SPHEREx image of 3I/ATLAS from NASA/IPAC, removes the background glow, lines the images up on the same patch of sky, and measures the comet at the exact infrared colour of each image.</p>
+          <p id="aboutStats"></p>
+          <h3>Team</h3>
+          <p>Kepler 16 — a student team from Miri, Malaysia. NASA Space Apps Challenge 2026.</p>
+        </div>
+        <div>
+          <h3>Data and credits</h3>
+          <ul>
+            <li>SPHEREx Quick Release spectral images (QR2), NASA/IPAC Infrared Science Archive (IRSA).</li>
+            <li>IRSA table of SPHEREx observations of comet 3I/ATLAS.</li>
+            <li>Known asteroids: NASA JPL Small-Body Identification API.</li>
+            <li>Star positions and motions: ESA Gaia Data Release 3 (SIMBAD for brown dwarfs too faint for Gaia).</li>
+            <li>Inspired by WiseView, the public blink tool for NASA's WISE mission.</li>
+            <li>Python: astropy, reproject, numpy, matplotlib, Pillow. Sound: Web Audio API.</li>
+          </ul>
+          <p class="small">This project makes use of data products from SPHEREx, which is a joint project of the Jet Propulsion Laboratory and the California Institute of Technology, and is funded by the National Aeronautics and Space Administration.</p>
+          <h3>Use of AI</h3>
+          <p class="small">Parts of the data pipeline code, website code and information text were drafted with help from Claude, an AI assistant by Anthropic, then tested, checked and edited by our team. All images are real SPHEREx data, not AI-generated.</p>
+          <p class="small">SKY BLINK is a student project and is not affiliated with or endorsed by NASA.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="foot">SKY BLINK · Kepler 16 · NASA Space Apps Challenge 2026</footer>
+
+  <script src="data/site_data.js"></script>
+  <script src="data/targets.js"></script>
+  <script src="data/planetx.js"></script>
+  <script src="data/saved.js"></script>
+  <script src="live.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
