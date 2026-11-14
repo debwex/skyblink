@@ -3,8 +3,9 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>SKY BLINK — See it. Hear it. Find it. | SPHEREx & Planet X</title>
-  <meta name="description" content="Explore real NASA SPHEREx images of interstellar comet 3I/ATLAS. Blink through the sky, hear the comet move, and discover what it is made of.">
+  <title>SKY BLINK — See it. Hear it. Find it. | SPHEREx sky changes &amp; Planet X</title>
+  <meta name="description" content="Search real NASA SPHEREx images of any spot in the sky, blink them to see what moves or changes, hear it with sound mode, and hunt for Planet X.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22%3E%3Ccircle cx=%2216%22 cy=%2216%22 r=%2213%22 fill=%22%2307101f%22 stroke=%22%235eeaff%22 stroke-width=%223%22/%3E%3Ccircle cx=%2216%22 cy=%2216%22 r=%224%22 fill=%22%23ffb24a%22/%3E%3C/svg%3E">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -508,7 +509,7 @@
       <div class="panel-head">
         <p class="eyebrow">Behind the scenes</p>
         <h2>How SKY BLINK works</h2>
-        <p>Our own Python pipeline turns raw NASA archive files into pictures and sounds anyone can explore.</p>
+        <p>Our own Python code turns raw NASA archive files into pictures and sounds anyone can explore. The steps below show the 3I/ATLAS case study; Search and Planet X Hunter use the same steps on SPHEREx Data Release 1 images (live search runs through our Python helper).</p>
       </div>
       <div class="flow" id="flow"></div>
       <div class="limits">
@@ -517,6 +518,9 @@
           <li>"Comet signal" is signal-to-noise inside a small circle — great for comparing colours, but not a calibrated brightness.</li>
           <li>Each image only sees one infrared colour at the comet's spot, so the fingerprint is built from many images taken at different times.</li>
           <li>Known-asteroid positions come from NASA JPL predictions for an observer on Earth; SPHEREx orbits Earth, so labels can be off by a pixel or two.</li>
+          <li>The change finder only flags candidates. Different frames see slightly different infrared colours, so always check a candidate by blinking before believing it.</li>
+          <li>SPHEREx pixels are large (6.15″). Very faint targets (like WISE 0855) are not detected, and very bright stars (like R Draconis) saturate the images.</li>
+          <li>On this website, Search shows saved real searches of the 5 challenge targets. Searching any other position needs our Python helper running on a computer.</li>
         </ul>
       </div>
     </section>
@@ -530,7 +534,7 @@
       <div class="about-grid">
         <div>
           <h3>What we built</h3>
-          <p>SKY BLINK turns real NASA SPHEREx data into a tool anyone can use — by sight or by sound. Our Python pipeline downloads every SPHEREx image of 3I/ATLAS from NASA/IPAC, removes the background glow, lines the images up on the same patch of sky, and measures the comet at the exact infrared colour of each image.</p>
+          <p>SKY BLINK turns real NASA SPHEREx data into a tool anyone can use — by sight or by sound. Search fetches SPHEREx images of any sky position from NASA/IPAC IRSA, lines them up, blinks them and finds changes. Planet X Hunter shows Pluto and Makemake moving in real SPHEREx images, and the 3I/ATLAS case study measures an interstellar comet at the exact infrared colour of each image. Every view can also be heard.</p>
           <p id="aboutStats"></p>
           <h3>Team</h3>
           <p>Kepler 16 — a student team from Miri, Malaysia. NASA Space Apps Challenge 2026.</p>
@@ -538,16 +542,18 @@
         <div>
           <h3>Data and credits</h3>
           <ul>
-            <li>SPHEREx Quick Release spectral images (QR2), NASA/IPAC Infrared Science Archive (IRSA).</li>
+            <li>SPHEREx Data Release 1 (spherex_dr1) and Quick Release (QR2) spectral images, NASA/IPAC Infrared Science Archive (IRSA).</li>
+            <li>Pluto and Makemake positions: NASA JPL Horizons.</li>
             <li>IRSA table of SPHEREx observations of comet 3I/ATLAS.</li>
             <li>Known asteroids: NASA JPL Small-Body Identification API.</li>
-            <li>Star positions and motions: ESA Gaia Data Release 3 (SIMBAD for brown dwarfs too faint for Gaia).</li>
+            <li>Star positions and motions: ESA Gaia Data Release 3 (SIMBAD for brown dwarfs too faint for Gaia). Infrared sources: AllWISE (NASA/IPAC IRSA).</li>
+            <li>Name lookup: CDS Sesame; sky atlas links: CDS Aladin Lite.</li>
             <li>Inspired by WiseView, the public blink tool for NASA's WISE mission.</li>
-            <li>Python: astropy, reproject, numpy, matplotlib, Pillow. Sound: Web Audio API.</li>
+            <li>Python: astropy, astroquery, reproject, numpy, scipy, matplotlib, Pillow. Sound: Web Audio API and the browser speech voice.</li>
           </ul>
           <p class="small">This project makes use of data products from SPHEREx, which is a joint project of the Jet Propulsion Laboratory and the California Institute of Technology, and is funded by the National Aeronautics and Space Administration.</p>
           <h3>Use of AI</h3>
-          <p class="small">Parts of the data pipeline code, website code and information text were drafted with help from Claude, an AI assistant by Anthropic, then tested, checked and edited by our team. All images are real SPHEREx data, not AI-generated.</p>
+          <p class="small">Parts of the data pipeline code, website code and information text were drafted with help from Claude, an AI assistant by Anthropic, then tested, checked and edited by our team. All images are real SPHEREx data, not AI-generated. Our demo video uses AI-generated animation, music and an AI text-to-speech voice (Kokoro TTS), and is marked as SI-generated.</p>
           <p class="small">SKY BLINK is a student project and is not affiliated with or endorsed by NASA.</p>
         </div>
       </div>

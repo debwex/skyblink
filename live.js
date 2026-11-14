@@ -14,6 +14,9 @@
   function wlColour(wl) { return SB().wlColour ? SB().wlColour(wl) : "#5eeaff"; }
 
   async function ping() {
+    // On the public website (no local helper), skip the check instead of asking a server that does not exist.
+    const local = /^(localhost|127\.0\.0\.1)$/.test(location.hostname) || params.get("api") || !location.protocol.startsWith("http");
+    if (!local) { S.online = false; $("sOffline").hidden = false; $("sSavedNote").hidden = !Object.keys(SAVED).length; $("sSave").hidden = true; S.base = ""; return false; }
     try {
       const r = await fetch(`${API}/api/ping`, { cache: "no-store" });
       S.online = r.ok;
