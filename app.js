@@ -201,7 +201,7 @@
     const nSaved = Object.keys(window.SKYBLINK_SAVED || {}).length;
     const stats = [
       ["Any RA/Dec", "search the whole sky"],
-      [String(nSaved || 5), "challenge targets tested"],
+      ["5", "challenge targets tested"],
       ["0.75–5 µm", "spectra on the fly"],
       ["🎧", "every view can be heard"],
     ];
