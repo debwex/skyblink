@@ -291,6 +291,18 @@
     $("sForm").onsubmit = run;
     $("sName").addEventListener("input", () => { if ($("sName").value.trim()) { $("sRa").value = ""; $("sDec").value = ""; } });
     ["sRa", "sDec"].forEach((id) => $(id).addEventListener("input", () => { if ($(id).value.trim()) $("sName").value = ""; }));
+    // Extra saved searches (beyond the 5 challenge targets) get their own row of buttons.
+    const known = new Set([...document.querySelectorAll(".presets .pchip")].map((b) => slugOf(b.dataset.name)));
+    const extra = Object.keys(SAVED).filter((k) => !known.has(k));
+    if (extra.length) {
+      const row = document.createElement("div");
+      row.className = "presets"; row.setAttribute("aria-label", "More saved searches");
+      row.innerHTML = '<span class="muted small">More real searches:</span>' + extra.map((k) => {
+        const nm = (SAVED[k].name || (SAVED[k].result && SAVED[k].result.name) || k).replace(/[<>"&]/g, "");
+        return `<button type="button" class="pchip" data-name="${nm}">${nm}</button>`;
+      }).join("");
+      document.querySelector(".presets").after(row);
+    }
     document.querySelectorAll(".presets .pchip").forEach((b) => {
       b.onclick = () => { $("sName").value = b.dataset.name; $("sRa").value = ""; $("sDec").value = ""; $("sDet").value = "auto"; run(); };
     });
