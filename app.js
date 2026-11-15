@@ -1,3 +1,4 @@
+/* SI (AI) use: parts of this code were written with help from Claude, an AI assistant by Anthropic, then tested, checked and edited by Team Kepler 16. NASA Space Apps 2026. */
 /* SKY BLINK — explore SPHEREx images of comet 3I/ATLAS by sight or by sound.
    Data comes from data/site_data.js, made by:  python spherex_test.py --web   */
 (() => {

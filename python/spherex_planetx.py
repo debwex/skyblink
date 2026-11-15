@@ -1,4 +1,5 @@
 """
+SI (AI) use: parts of this code were written with help from Claude, an AI assistant by Anthropic, then tested, checked and edited by Team Kepler 16. NASA Space Apps 2026.
 SKY BLINK - "Planet X Hunter" pipeline (NASA Space Apps 2026, "Planet X and SPHEREx")
 =====================================================================================
 How would astronomers find an unknown Planet X? It belongs to our Solar System,

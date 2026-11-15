@@ -1,4 +1,5 @@
 """
+SI (AI) use: parts of this code were written with help from Claude, an AI assistant by Anthropic, then tested, checked and edited by Team Kepler 16. NASA Space Apps 2026.
 SKY BLINK live helper - "Search the sky" for ANY position (NASA Space Apps 2026, "Planet X and SPHEREx")
 ======================================================================================================
 Run it from the skyblink folder:
@@ -35,6 +36,7 @@ import time
 import traceback
 import urllib.parse
 import urllib.request
+import urllib.error
 import uuid
 import warnings
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -46,6 +48,15 @@ from astropy.coordinates import SkyCoord
 from astropy.time import Time
 
 import spherex_test as base
+# Use the computer's own (Windows/macOS) certificate store for every HTTPS download,
+# the same one the web browser uses. Fixes "CERTIFICATE_VERIFY_FAILED" on many school/home networks.
+try:
+    import truststore
+    truststore.inject_into_ssl()
+    print("Certificates: using this computer's certificate store (truststore).")
+except ImportError:
+    print("Tip: if searches fail with CERTIFICATE_VERIFY_FAILED, run:  python -m pip install truststore")
+
 import spherex_targets as tg
 
 warnings.simplefilter("ignore")
@@ -77,6 +88,13 @@ PRESETS = {
     "rw aur": "rw aurigae",
     "r draconis": {"ra": 248.1675, "dec": 66.755, "pmra": -2.0, "pmdec": 15.0, "epoch": 2000.0, "det": 3},
     "r dra": "r draconis",
+    # Extra famous fast-moving neighbours (work even without the online name lookup)
+    "luhman 16": {"ra": 162.328014, "dec": -53.319406, "pmra": -2762.2, "pmdec": 357.8, "epoch": 2000.0, "det": 4},
+    "luhman 16ab": "luhman 16",
+    "wise 1049-5319": "luhman 16",
+    "proxima centauri": {"ra": 217.428953, "dec": -62.679484, "pmra": -3781.7, "pmdec": 769.5, "epoch": 2000.0, "det": 2},
+    "proxima": "proxima centauri",
+    "proxima cen": "proxima centauri",
 }
 
 JOBS = {}
@@ -116,6 +134,55 @@ def parse_coord(ra_s, dec_s):
     return SkyCoord(ra_s, dec_s, unit=(u.hourangle if sexa else u.deg, u.deg))
 
 
+def _ssl_context():
+    """Windows Python often lacks up-to-date root certificates; use certifi's list when available."""
+    import ssl
+    try:
+        import certifi
+        return ssl.create_default_context(cafile=certifi.where())
+    except Exception:
+        return ssl.create_default_context()
+
+
+def fetch_text(url, timeout=20):
+    """Download text, trying several ways (some Windows/school networks reject one of them)."""
+    errors = []
+    try:  # 1) requests + certifi (same way the SPHEREx downloads work)
+        import requests
+        r = requests.get(url, timeout=timeout)
+        r.raise_for_status()
+        return r.text
+    except Exception as e:
+        errors.append(e)
+    for ctx in (None, _ssl_context()):  # 2) Windows certificate store, 3) certifi list
+        try:
+            with urllib.request.urlopen(url, timeout=timeout, context=ctx) as r:
+                return r.read().decode("utf-8", "replace")
+        except Exception as e:
+            errors.append(e)
+    raise errors[0]
+
+
+SESAME_MIRRORS = [
+    "https://cds.unistra.fr/cgi-bin/nph-sesame/-oxp/SNV?",        # CDS Strasbourg
+    "https://vizier.cfa.harvard.edu/viz-bin/nph-sesame/-oxp/SNV?",  # CfA Harvard mirror
+]
+
+
+def sesame_xml(name):
+    last = None
+    for base in SESAME_MIRRORS:
+        try:
+            xml = fetch_text(base + urllib.parse.quote(name))
+            if "<jradeg>" in xml or "<Resolver" in xml:
+                return xml
+        except Exception as e:
+            last = e
+    raise ValueError("Could not look up that name right now"
+                     + (f" ({type(last).__name__})" if last else "")
+                     + ". Type the RA and Dec in degrees instead.")
+
+
 def resolve_name(name):
     """Name -> position. Challenge targets are built in; other names go to CDS Sesame."""
     key = name.strip().lower().replace("’", "'")
@@ -124,9 +191,7 @@ def resolve_name(name):
         p = PRESETS[p]
     if p:
         return dict(p, source="SKY BLINK built-in (with proper motion)")
-    url = "https://cds.unistra.fr/cgi-bin/nph-sesame/-oxp/SNV?" + urllib.parse.quote(name)
-    with urllib.request.urlopen(url, timeout=20) as r:
-        xml = r.read().decode("utf-8", "replace")
+    xml = sesame_xml(name)
     ra = re.search(r"<jradeg>([-\d.eE+]+)</jradeg>", xml)
     dec = re.search(r"<jdedeg>([-\d.eE+]+)</jdedeg>", xml)
     if not (ra and dec):

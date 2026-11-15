@@ -1,4 +1,5 @@
 """
+SI (AI) use: parts of this code were written with help from Claude, an AI assistant by Anthropic, then tested, checked and edited by Team Kepler 16. NASA Space Apps 2026.
 SKY BLINK - challenge targets pipeline (NASA Space Apps 2026, "Planet X and SPHEREx")
 ====================================================================================
 Makes website data for fixed-sky targets: fast-moving nearby stars, brown dwarfs

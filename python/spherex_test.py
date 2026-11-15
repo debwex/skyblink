@@ -1,4 +1,5 @@
 """
+SI (AI) use: parts of this code were written with help from Claude, an AI assistant by Anthropic, then tested, checked and edited by Team Kepler 16. NASA Space Apps 2026.
 SKY BLINK - SPHEREx data pipeline (NASA Space Apps 2026)
 =========================================================
 Works on real NASA SPHEREx images of the interstellar comet 3I/ATLAS.

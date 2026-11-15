@@ -1,3 +1,4 @@
+/* SI (AI) use: parts of this code were written with help from Claude, an AI assistant by Anthropic, then tested, checked and edited by Team Kepler 16. NASA Space Apps 2026. */
 /* SKY BLINK - "Search the sky": live SPHEREx search for any RA/Dec, via the local helper (skyblink_server.py). */
 (() => {
   "use strict";
